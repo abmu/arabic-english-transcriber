@@ -1,7 +1,6 @@
 from transformers import MarianMTModel, MarianTokenizer
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
-import uuid
 import io
 
 class ArabicToEnglishTranslator:
@@ -26,16 +25,16 @@ model = WhisperModel("small", device='cpu', compute_type='int8')
 translator = ArabicToEnglishTranslator()
 
 def transcribe_and_translate(raw_audio_bytes: bytes) -> str:
-    # generate unique filename
-    audio_id = str(uuid.uuid4())
-    temp_path = f'temp_{audio_id}.wav'
-
-    # export audio to wav file
+    # convert audio bytes to AUdioSegment
     audio = AudioSegment.from_file(io.BytesIO(raw_audio_bytes), format='webm')
-    audio.export(temp_path, format='wav')
+
+    # export audio to in-memory WAV buffer
+    wav_io = io.BytesIO()
+    audio.export(wav_io, format='wav')
+    wav_io.seek(0)
 
     # transcribe audio
-    segments, _ = model.transcribe(temp_path, language='ar', beam_size=5)
+    segments, _ = model.transcribe(wav_io, language='ar', beam_size=5)
     transcript = " ".join([segment.text for segment in segments])
 
     # translate text
