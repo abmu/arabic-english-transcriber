@@ -5,3 +5,4 @@ torch
 sacremoses
 fastapi
 pydub
+uvicorn
