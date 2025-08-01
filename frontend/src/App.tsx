@@ -37,7 +37,7 @@ function App() {
         recorderType: StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: 16000,
-        timeSlice: 500,
+        timeSlice: 5000,
         ondataavailable: (blob: Blob) => {
           if (socketRef.current?.readyState === WebSocket.OPEN) {
             blob.arrayBuffer().then((buffer) => {
