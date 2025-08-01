@@ -26,7 +26,7 @@ translator = ArabicToEnglishTranslator()
 
 def transcribe_and_translate(raw_audio_bytes: bytes) -> str:
     # convert audio bytes to AUdioSegment
-    audio = AudioSegment.from_file(io.BytesIO(raw_audio_bytes), format='webm')
+    audio = AudioSegment.from_file(io.BytesIO(raw_audio_bytes), format='wav')
 
     # export audio to in-memory WAV buffer
     wav_io = io.BytesIO()
