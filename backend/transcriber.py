@@ -2,6 +2,7 @@ from transformers import MarianMTModel, MarianTokenizer
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 import io
+from datetime import datetime
 
 class ArabicToEnglishTranslator:
     def __init__(self):
@@ -25,6 +26,14 @@ model = WhisperModel("small", device='cpu', compute_type='int8')
 translator = ArabicToEnglishTranslator()
 
 def transcribe_and_translate(raw_audio_bytes: bytes) -> str:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    audio_filename = f"debug_audio_{timestamp}.wav"
+    
+    # Save the raw bytes to a file first (for debugging)
+    with open(audio_filename, 'wb') as f:
+        f.write(raw_audio_bytes)
+    print(f"Debug: Raw audio saved to {audio_filename}")
+
     # convert audio bytes to AUdioSegment
     audio = AudioSegment.from_file(io.BytesIO(raw_audio_bytes), format='wav')
 

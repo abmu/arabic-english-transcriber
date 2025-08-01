@@ -16,14 +16,14 @@ app.add_middleware(
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     audio_buffer = b''
-    chunk_size_limit = 16000 * 1 # 1 sec of 16KB audio
+    chunk_size_limit = 16000 * 5 # 5 sec of 16KB audio
 
     while True:
         try:
             data = await websocket.receive_bytes()
             audio_buffer += data
 
-            if len(audio_buffer) >= chunk_size_limit: 
+            if len(audio_buffer) >= chunk_size_limit:
                 try:
                     translated_text = transcribe_and_translate(audio_buffer)
                     await websocket.send_text(translated_text)

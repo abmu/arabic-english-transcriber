@@ -37,7 +37,7 @@ function App() {
         recorderType: StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: 16000,
-        timeSlice: 1000,
+        timeSlice: 500,
         ondataavailable: (blob: Blob) => {
           if (socketRef.current?.readyState === WebSocket.OPEN) {
             blob.arrayBuffer().then((buffer) => {
@@ -56,8 +56,13 @@ function App() {
   };
 
   const stopRecording = () => {
+    recorderRef.current?.stopRecording();
+    recorderRef.current = null;
+
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+
     setIsRecording(false);
-    console.log('Recording Stopped');
   }
 
   return (
