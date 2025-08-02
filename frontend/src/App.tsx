@@ -3,7 +3,8 @@ import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
-  const [translatedText, setTranslatedText] = useState('');
+  const [finalSegments, setFinalSegments] = useState<{ transcript: string; translation: string }[]>([]);
+  const [interimSegment, setInterimSegment] = useState<{ transcript: string; translation: string } | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -14,7 +15,24 @@ function App() {
     socketRef.current = socket;
 
     socket.onmessage = (event) => {
-      setTranslatedText(event.data);
+      try {
+        const msg = JSON.parse(event.data);
+
+        if (msg.type === 'final') {
+          setFinalSegments((prev) => [...prev, {
+            transcript: msg.transcript,
+            translation: msg.translation
+          }]);
+          setInterimSegment(null);
+        } else if (msg.type === 'interim') {
+          setInterimSegment({
+            transcript: msg.transcript,
+            translation: msg.translation
+          });
+        }
+      } catch (e) {
+        console.error('Invalid JSON from server:', event.data);
+      }
     };
 
     socket.onerror = (err) => {
@@ -39,7 +57,7 @@ function App() {
         recorderType: StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: sampleRate,
-        timeSlice: 600,
+        timeSlice: 1000,
         ondataavailable: (blob: Blob) => {
           if (socketRef.current?.readyState === WebSocket.OPEN) {
             blob.arrayBuffer().then((buffer) => {
@@ -73,8 +91,18 @@ function App() {
       <button onClick={isRecording ? stopRecording : startRecording}>
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>
+      <h2>Transcript:</h2>
+      <p>
+        {[...finalSegments.map(seg => seg.transcript), interimSegment?.transcript]
+          .filter(Boolean)
+          .join(' ')}
+      </p>
       <h2>Translation:</h2>
-      <p>{translatedText}</p>
+      <p>
+        {[...finalSegments.map(seg => seg.translation), interimSegment?.translation]
+          .filter(Boolean)
+          .join(' ')}
+      </p>
     </div>
   );
 }

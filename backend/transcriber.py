@@ -24,7 +24,7 @@ class ArabicToEnglishTranslator:
         english_text = self.tokenizer.decode(translated[0], skip_special_tokens=True)
         return english_text
 
-def transcribe_and_translate(audio: AudioSegment) -> str:
+def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
     # export audio to in-memory WAV buffer
     wav_io = io.BytesIO()
     audio.export(wav_io, format='wav')
@@ -36,8 +36,7 @@ def transcribe_and_translate(audio: AudioSegment) -> str:
 
     # translate text
     translation = translator.translate(transcript)
-    print(transcript, translation)
-    return translation 
+    return transcript, translation 
     
 def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
     # check if rms amplitude of audio data is smaller than threshold value

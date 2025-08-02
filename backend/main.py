@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
 from transcriber import transcribe_and_translate, is_silent, SAMPLE_RATE
 from datetime import datetime
+import json
 
 app = FastAPI()
 
@@ -32,21 +33,31 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if is_silent(audio):
                 if audio_chunks:
-                    # save to temp audio file
                     full_audio = sum(audio_chunks)
+
+                    # debugging - save to audio file
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f'audio_{timestamp}.wav'
                     full_audio.export(filename, format='wav')
+
+                    transcript, translation = transcribe_and_translate(full_audio)
+                    await websocket.send_text(json.dumps({
+                        'type': 'final',
+                        'transcript': transcript,
+                        'translation': translation
+                    }))
 
                     audio_chunks.clear() # reset after sentence/silence
             else:
                 audio_chunks.append(audio)
                 full_audio = sum(audio_chunks)
-                try:
-                    translated_text = transcribe_and_translate(full_audio)
-                    await websocket.send_text(translated_text)
-                except Exception as e:
-                    await websocket.send_text(f'[Error] {str(e)}')
+
+                transcript, translation = transcribe_and_translate(full_audio)
+                await websocket.send_text(json.dumps({
+                    'type': 'interim',
+                    'transcript': transcript,
+                    'translation': translation
+                }))
 
         except Exception as e:
             print('WebSocket Error:', e)
