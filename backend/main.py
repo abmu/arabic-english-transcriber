@@ -31,6 +31,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 channels=1
             )
 
+            # Append every non silent audio chunk to array and translate entire audio array until silence is received.
+            # When silence is received, translate a final time and clear out array to start over.
             if is_silent(audio):
                 if audio_chunks:
                     final_audio = sum(audio_chunks)
