@@ -2,7 +2,6 @@ from transformers import MarianMTModel, MarianTokenizer
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 import io
-from datetime import datetime
 
 SAMPLE_RATE = 16000
 RMS_THRESHOLD = 800
@@ -26,11 +25,6 @@ class ArabicToEnglishTranslator:
         return english_text
 
 def transcribe_and_translate(audio: AudioSegment) -> str:
-    # save to temp audio file
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'audio_{timestamp}.wav'
-    audio.export(filename, format='wav')
-
     # export audio to in-memory WAV buffer
     wav_io = io.BytesIO()
     audio.export(wav_io, format='wav')
@@ -42,6 +36,7 @@ def transcribe_and_translate(audio: AudioSegment) -> str:
 
     # translate text
     translation = translator.translate(transcript)
+    print(transcript, translation)
     return translation 
     
 def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
