@@ -33,14 +33,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if is_silent(audio):
                 if audio_chunks:
-                    full_audio = sum(audio_chunks)
+                    final_audio = sum(audio_chunks)
 
                     # debugging - save to audio file
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = f'audio_{timestamp}.wav'
-                    full_audio.export(filename, format='wav')
+                    final_audio.export(filename, format='wav')
 
-                    transcript, translation = transcribe_and_translate(full_audio)
+                    transcript, translation = transcribe_and_translate(final_audio)
                     await websocket.send_text(json.dumps({
                         'type': 'final',
                         'transcript': transcript,
@@ -50,9 +50,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     audio_chunks.clear() # reset after sentence/silence
             else:
                 audio_chunks.append(audio)
-                full_audio = sum(audio_chunks)
+                interim_audio = sum(audio_chunks)
 
-                transcript, translation = transcribe_and_translate(full_audio)
+                transcript, translation = transcribe_and_translate(interim_audio)
                 await websocket.send_text(json.dumps({
                     'type': 'interim',
                     'transcript': transcript,
