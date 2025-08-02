@@ -3,15 +3,19 @@ from faster_whisper import WhisperModel
 from pydub import AudioSegment
 from typing import Union, BinaryIO
 from datetime import datetime
-from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR
+from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
 import io
 import os
 
 
 class Transcriber:
-    def __init__(self, source_lang: str):
+    def __init__(self, source_lang: str, device: str='cpu'):
         self.source_lang = source_lang
-        self.model = WhisperModel("small", device='cpu', compute_type='int8')
+        model_kwargs = {
+            'device': device,
+            'compute_type': 'float16' if device == 'cuda' else 'int8'
+        }
+        self.model = WhisperModel('tiny', **model_kwargs)
 
     def transcribe(self, audio: Union[str, BinaryIO]) -> str:
         # transcribe audio and concatenate segments
@@ -21,11 +25,15 @@ class Transcriber:
 
 
 class Translator:
-    def __init__(self, source_lang: str, target_lang: str):
+    def __init__(self, source_lang: str, target_lang: str, device: str='cpu'):
         self.source_lang, self.target_lang = source_lang, target_lang
-        model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
+        # model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
+        model_name = f'Helsinki-NLP/opus-mt-{source_lang}-{target_lang}'
         self.tokenizer = MarianTokenizer.from_pretrained(model_name)
         self.model = MarianMTModel.from_pretrained(model_name)
+        if device == 'cuda':
+            self.model = self.model.to('cuda')
+
 
     def translate(self, source_text: str) -> str:
         if not source_text.strip():
@@ -64,10 +72,10 @@ def save_audio_to_file(audio: AudioSegment) -> None:
     # create audio directory if it doesn't exist
     os.makedirs(DEBUG_AUDIO_SAVE_DIR, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f'{DEBUG_AUDIO_SAVE_DIR}/{timestamp}.wav'
     audio.export(filename, format='wav')
 
 
-transcriber = Transcriber(SOURCRE_LANG)
-translator = Translator(SOURCRE_LANG, TARGET_LANG)
+transcriber = Transcriber(SOURCRE_LANG, device=DEVICE)
+translator = Translator(SOURCRE_LANG, TARGET_LANG, device=DEVICE)
