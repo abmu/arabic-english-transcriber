@@ -31,13 +31,15 @@ function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
+      const sampleRate = 16000;
+
       const recorder = new RecordRTC(stream, {
         type: 'audio',
         mimeType: 'audio/wav',
         recorderType: StereoAudioRecorder,
         numberOfAudioChannels: 1,
-        desiredSampRate: 16000,
-        timeSlice: 5000,
+        desiredSampRate: sampleRate,
+        timeSlice: 600,
         ondataavailable: (blob: Blob) => {
           if (socketRef.current?.readyState === WebSocket.OPEN) {
             blob.arrayBuffer().then((buffer) => {
