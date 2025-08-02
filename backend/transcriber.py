@@ -1,28 +1,46 @@
 from transformers import MarianMTModel, MarianTokenizer
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
+from typing import Union, BinaryIO
 import io
 
 SAMPLE_RATE = 16000
 RMS_THRESHOLD = 800
 
-class ArabicToEnglishTranslator:
-    def __init__(self):
-        model_name = 'Helsinki-NLP/opus-mt-tc-big-ar-en'
+SOURCRE_LANG = 'en'
+TARGET_LANG = 'ar'
+
+class Transcriber:
+    def __init__(self, source_lang: str):
+        self.source_lang = source_lang
+        self.model = WhisperModel("small", device='cpu', compute_type='int8')
+
+    def transcribe(self, audio: Union[str, BinaryIO]) -> str:
+        # transcribe audio and concatenate segments
+        segments, _ = self.model.transcribe(audio, language=self.source_lang, beam_size=5)
+        transcription = " ".join([segment.text for segment in segments])
+        return transcription
+
+
+class Translator:
+    def __init__(self, source_lang: str, target_lang: str):
+        self.source_lang, self.target_lang = source_lang, target_lang
+        model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
         self.tokenizer = MarianTokenizer.from_pretrained(model_name)
         self.model = MarianMTModel.from_pretrained(model_name)
 
-    def translate(self, arabic_text: str) -> str:
-        if not arabic_text.strip():
+    def translate(self, source_text: str) -> str:
+        if not source_text.strip():
             return ''
         
         # convert text to tokens and translate
-        inputs = self.tokenizer(arabic_text, return_tensors='pt', padding=True, truncation=True)
-        translated = self.model.generate(**inputs)
+        inputs = self.tokenizer(source_text, return_tensors='pt', padding=True, truncation=True)
+        outputs = self.model.generate(**inputs)
 
         # convert output tokens into translated text
-        english_text = self.tokenizer.decode(translated[0], skip_special_tokens=True)
-        return english_text
+        translation = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return translation
+
 
 def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
     # export audio to in-memory WAV buffer
@@ -31,17 +49,18 @@ def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
     wav_io.seek(0)
 
     # transcribe audio
-    segments, _ = model.transcribe(wav_io, language='ar', beam_size=5)
-    transcript = " ".join([segment.text for segment in segments])
+    transcription = transcriber.transcribe(wav_io)
 
     # translate text
-    translation = translator.translate(transcript)
-    return transcript, translation 
+    translation = translator.translate(transcription)
     
+    return transcription, translation 
+
+
 def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
     # check if rms amplitude of audio data is smaller than threshold value
     return audio.rms < rms_threshold
 
 
-model = WhisperModel("small", device='cpu', compute_type='int8')
-translator = ArabicToEnglishTranslator()
+transcriber = Transcriber(SOURCRE_LANG)
+translator = Translator(SOURCRE_LANG, TARGET_LANG)
