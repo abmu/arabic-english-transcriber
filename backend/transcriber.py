@@ -2,13 +2,11 @@ from transformers import MarianMTModel, MarianTokenizer
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 from typing import Union, BinaryIO
+from datetime import datetime
+from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR
 import io
+import os
 
-SAMPLE_RATE = 16000
-RMS_THRESHOLD = 800
-
-SOURCRE_LANG = 'en'
-TARGET_LANG = 'ar'
 
 class Transcriber:
     def __init__(self, source_lang: str):
@@ -53,13 +51,22 @@ def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
 
     # translate text
     translation = translator.translate(transcription)
-    
+
     return transcription, translation 
 
 
 def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
     # check if rms amplitude of audio data is smaller than threshold value
     return audio.rms < rms_threshold
+
+
+def save_audio_to_file(audio: AudioSegment) -> None:
+    # create audio directory if it doesn't exist
+    os.makedirs(DEBUG_AUDIO_SAVE_DIR, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f'{DEBUG_AUDIO_SAVE_DIR}/{timestamp}.wav'
+    audio.export(filename, format='wav')
 
 
 transcriber = Transcriber(SOURCRE_LANG)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
+import { AUDIO_SETTINGS } from './config';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -49,15 +50,13 @@ function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const sampleRate = 16000;
-
       const recorder = new RecordRTC(stream, {
         type: 'audio',
         mimeType: 'audio/wav',
         recorderType: StereoAudioRecorder,
         numberOfAudioChannels: 1,
-        desiredSampRate: sampleRate,
-        timeSlice: 1000,
+        desiredSampRate: AUDIO_SETTINGS.SAMPLE_RATE,
+        timeSlice: AUDIO_SETTINGS.TIME_SLICE,
         ondataavailable: (blob: Blob) => {
           if (socketRef.current?.readyState === WebSocket.OPEN) {
             blob.arrayBuffer().then((buffer) => {
