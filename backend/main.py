@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
-from transcriber import transcribe_and_translate, is_silent, save_audio_to_file
+from utils import transcribe_and_translate, is_silent, save_audio_to_file
 from settings import SAMPLE_RATE, DEBUG
 import json
 

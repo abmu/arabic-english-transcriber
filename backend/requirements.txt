@@ -1,4 +1,4 @@
-faster-whisper
+faster-whisper==0.10.1
 transformers
 sentencepiece
 torch
