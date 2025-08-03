@@ -3,7 +3,7 @@ from faster_whisper import WhisperModel
 from pydub import AudioSegment
 from typing import Union, BinaryIO
 from datetime import datetime
-from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
+from settings import SOURCRE_LANG, TARGET_LANG, WHISPER_MODEL_SIZE, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
 import io
 import os
 
@@ -15,7 +15,7 @@ class Transcriber:
             'device': device,
             'compute_type': 'float16' if device == 'cuda' else 'int8'
         }
-        self.model = WhisperModel('tiny', **model_kwargs)
+        self.model = WhisperModel(WHISPER_MODEL_SIZE, **model_kwargs)
 
     def transcribe(self, audio: Union[str, BinaryIO]) -> str:
         # transcribe audio and concatenate segments
@@ -27,8 +27,8 @@ class Transcriber:
 class Translator:
     def __init__(self, source_lang: str, target_lang: str, device: str='cpu'):
         self.source_lang, self.target_lang = source_lang, target_lang
-        # model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
         model_name = f'Helsinki-NLP/opus-mt-{source_lang}-{target_lang}'
+        # model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
         self.tokenizer = MarianTokenizer.from_pretrained(model_name)
         self.model = MarianMTModel.from_pretrained(model_name)
         if device == 'cuda':
