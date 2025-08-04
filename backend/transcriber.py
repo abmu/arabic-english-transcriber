@@ -14,6 +14,6 @@ class Transcriber:
 
     def transcribe(self, audio: Union[str, BinaryIO]) -> str:
         # transcribe audio and concatenate segments
-        segments, _ = self.model.transcribe(audio, language=self.source_lang, beam_size=5)
+        segments, _ = self.model.transcribe(audio, language=self.source_lang, beam_size=5) # vad_filter=True
         transcription = " ".join([segment.text for segment in segments])
         return transcription

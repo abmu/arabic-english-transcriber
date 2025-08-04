@@ -1,9 +1,11 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
-from utils import transcribe_and_translate, is_silent, save_audio_to_file
+from utils import transcribe_and_translate, save_audio_to_file
 from settings import SAMPLE_RATE, DEBUG
 import json
+
+WINDOW_DURATION = 3000 # milliseconds
 
 app = FastAPI()
 
@@ -19,7 +21,7 @@ app.add_middleware(
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
-    audio_chunks = []
+    audio_buffer = AudioSegment.empty()
 
     while True:
         try:
@@ -31,32 +33,19 @@ async def websocket_endpoint(websocket: WebSocket):
                 channels=1
             )
 
-            # Append every non silent audio chunk to array and translate entire 'interim' audio array until silence is received.
-            # When silence is received, translate a 'final' time and clear out array to start over.
-            if is_silent(audio):
-                if audio_chunks:
-                    final_audio = sum(audio_chunks)
-                    if DEBUG:
-                        save_audio_to_file(final_audio)
+            audio_buffer += audio
+            current_duration = len(audio_buffer)
 
-                    transcript, translation = transcribe_and_translate(final_audio)
-                    await websocket.send_text(json.dumps({
-                        'type': 'final',
-                        'transcript': transcript,
-                        'translation': translation
-                    }))
+            if current_duration > WINDOW_DURATION:
+                diff = current_duration - WINDOW_DURATION
+                audio_buffer = audio_buffer[diff:]
 
-                    audio_chunks.clear() # reset after sentence/silence
-            else:
-                audio_chunks.append(audio)
-                interim_audio = sum(audio_chunks)
-
-                transcript, translation = transcribe_and_translate(interim_audio)
-                await websocket.send_text(json.dumps({
-                    'type': 'interim',
-                    'transcript': transcript,
-                    'translation': translation
-                }))
+            transcript, translation = transcribe_and_translate(audio_buffer)
+            await websocket.send_text(json.dumps({
+                'type': 'interim',
+                'transcript': transcript,
+                'translation': translation
+            }))
 
         except Exception as e:
             print('WebSocket Error:', e)

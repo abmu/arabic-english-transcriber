@@ -1,6 +1,6 @@
 from pydub import AudioSegment
 from datetime import datetime
-from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
+from settings import SOURCRE_LANG, TARGET_LANG, DEBUG_AUDIO_SAVE_DIR, DEVICE
 from transcriber import Transcriber
 from translator import Translator
 import io
@@ -20,11 +20,6 @@ def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
     translation = translator.translate(transcription)
 
     return transcription, translation 
-
-
-def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
-    # check if rms amplitude of audio data is smaller than threshold value
-    return audio.rms < rms_threshold
 
 
 def save_audio_to_file(audio: AudioSegment) -> None:
