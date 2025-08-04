@@ -5,7 +5,6 @@ class Translator:
     def __init__(self, source_lang: str, target_lang: str, device: str='cpu'):
         self.source_lang, self.target_lang = source_lang, target_lang
         model_name = f'Helsinki-NLP/opus-mt-{source_lang}-{target_lang}'
-        # model_name = f'Helsinki-NLP/opus-mt-tc-big-{source_lang}-{target_lang}'
         self.tokenizer = MarianTokenizer.from_pretrained(model_name)
         self.model = MarianMTModel.from_pretrained(model_name)
         self.device = device

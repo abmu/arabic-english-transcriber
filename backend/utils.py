@@ -1,25 +1,35 @@
 from pydub import AudioSegment
 from datetime import datetime
-from settings import SOURCRE_LANG, TARGET_LANG, DEBUG_AUDIO_SAVE_DIR, DEVICE
+from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
 from transcriber import Transcriber
 from translator import Translator
 import io
 import os
 
 
-def transcribe_and_translate(audio: AudioSegment) -> tuple[str, str]:
+def transcribe_and_translate(audio: AudioSegment, previous_transcript: str='') -> tuple[str, str]:
     # export audio to in-memory WAV buffer
     wav_io = io.BytesIO()
     audio.export(wav_io, format='wav')
     wav_io.seek(0)
 
     # transcribe audio
-    transcription = transcriber.transcribe(wav_io)
+    initial_prompt = f'Please continue from this previous transcript which preceded this audio segment: {previous_transcript}.'
+    transcription = transcriber.transcribe(wav_io, initial_prompt=initial_prompt)
 
     # translate text
-    translation = translator.translate(transcription)
+    translation = ''#translator.translate(transcription)
 
     return transcription, translation 
+
+
+def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
+    # check if rms amplitude of audio is smaller than threshold or if the transcript of the segment is empty
+    wav_io = io.BytesIO()
+    audio.export(wav_io, format='wav')
+    wav_io.seek(0)
+
+    return audio.rms < rms_threshold or transcriber.transcribe(wav_io) == ''
 
 
 def save_audio_to_file(audio: AudioSegment) -> None:
