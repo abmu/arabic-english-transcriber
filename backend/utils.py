@@ -18,18 +18,14 @@ def transcribe_and_translate(audio: AudioSegment, previous_transcript: str='') -
     transcription = transcriber.transcribe(wav_io, initial_prompt=initial_prompt)
 
     # translate text
-    translation = ''#translator.translate(transcription)
+    translation = translator.translate(transcription)
 
     return transcription, translation 
 
 
 def is_silent(audio: AudioSegment, rms_threshold: int=RMS_THRESHOLD) -> bool:
-    # check if rms amplitude of audio is smaller than threshold or if the transcript of the segment is empty
-    wav_io = io.BytesIO()
-    audio.export(wav_io, format='wav')
-    wav_io.seek(0)
-
-    return audio.rms < rms_threshold or transcriber.transcribe(wav_io) == ''
+    # check if rms amplitude of audio is smaller than threshold
+    return audio.rms < rms_threshold
 
 
 def save_audio_to_file(audio: AudioSegment) -> None:

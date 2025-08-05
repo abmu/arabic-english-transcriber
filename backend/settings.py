@@ -4,7 +4,7 @@ WHISPER_MODEL_SIZE = 'tiny'
 
 SAMPLE_RATE = 16000
 RMS_THRESHOLD = 800 # silence level
-WEBSOCKET_THRESHOLD = 333 # milliseconds
+WEBSOCKET_THRESHOLD = 1000 # milliseconds
 AUDIO_BUFFER_LIMIT = 2500 # milliseconds
 
 DEBUG = False
