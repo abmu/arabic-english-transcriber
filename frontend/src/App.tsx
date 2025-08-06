@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 import { AUDIO_SETTINGS } from './config';
 
@@ -6,6 +6,8 @@ function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [finalSegments, setFinalSegments] = useState<{ transcript: string; translation: string }[]>([]);
   const [interimSegment, setInterimSegment] = useState<{ transcript: string; translation: string } | null>(null);
+  const [sourceLang, setSourceLang] = useState<'ar' | 'en'>('ar');
+  const [targetLang, setTargetLang] = useState<'ar' | 'en'>('en');
 
   const socketRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -44,6 +46,22 @@ function App() {
       socket.close();
     };
   }, []);
+
+  const handleLanguageDirectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const direction = e.target.value;
+
+    if (isRecording) {
+      stopRecording();
+    }
+
+    if (direction === 'ar-en') {
+      setSourceLang('ar');
+      setTargetLang('en');
+    } else {
+      setSourceLang('en');
+      setTargetLang('ar');
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -87,6 +105,15 @@ function App() {
   return (
     <div>
       <h1>Arabic to English Translator</h1>
+      <div>
+        <label>
+          Language Direction:{' '}
+          <select onChange={handleLanguageDirectionChange}>
+            <option value="ar-en">Arabic ➝ English</option>
+            <option value="en-ar">English ➝ Arabic</option>
+          </select>
+        </label>
+      </div>
       <button onClick={isRecording ? stopRecording : startRecording}>
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>

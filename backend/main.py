@@ -47,7 +47,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 audio_buffer += websocket_buffer
             websocket_buffer = AudioSegment.empty()
             
-            print(len(audio_buffer))
             if len(audio_buffer) == 0:
                 continue
                 
