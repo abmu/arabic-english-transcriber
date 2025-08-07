@@ -81,8 +81,8 @@ function App() {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({
         type: 'config',
-        source_lang: sourceLang,
-        target_lang: targetLang
+        source_lang: newSourceLang,
+        target_lang: newTargetLang
       }));
     }
   };
