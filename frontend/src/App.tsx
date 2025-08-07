@@ -17,9 +17,21 @@ function App() {
     const socket = new WebSocket('ws://localhost:8000/ws/audio');
     socketRef.current = socket;
 
+    socket.onopen = () => {
+      socket.send(JSON.stringify({
+        type: 'config',
+        source_lang: sourceLang,
+        target_lang: targetLang
+      }));
+    }
+
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
+        
+        if (msg.error) {
+          console.error(`Server Error: ${msg.error}`);
+        }
 
         if (msg.type === 'final') {
           setFinalSegments((prev) => [...prev, {
@@ -49,21 +61,36 @@ function App() {
 
   const handleLanguageDirectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const direction = e.target.value;
+    let newSourceLang: 'ar' | 'en', newTargetLang: 'ar' | 'en';
 
     if (isRecording) {
       stopRecording();
     }
 
     if (direction === 'ar-en') {
-      setSourceLang('ar');
-      setTargetLang('en');
+      newSourceLang = 'ar';
+      newTargetLang = 'en';
     } else {
-      setSourceLang('en');
-      setTargetLang('ar');
+      newSourceLang = 'en';
+      newTargetLang = 'ar';
+    }
+
+    setSourceLang(newSourceLang);
+    setTargetLang(newTargetLang);
+
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'config',
+        source_lang: sourceLang,
+        target_lang: targetLang
+      }));
     }
   };
 
   const startRecording = async () => {
+    setFinalSegments([]);
+    setInterimSegment(null);
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -104,11 +131,11 @@ function App() {
 
   return (
     <div>
-      <h1>Arabic to English Translator</h1>
+      <h1>Arabic-English Translator</h1>
       <div>
         <label>
           Language Direction:{' '}
-          <select onChange={handleLanguageDirectionChange}>
+          <select onChange={handleLanguageDirectionChange} disabled={isRecording}>
             <option value="ar-en">Arabic ➝ English</option>
             <option value="en-ar">English ➝ Arabic</option>
           </select>

@@ -1,5 +1,7 @@
-SOURCRE_LANG = 'ar'
-TARGET_LANG = 'en'
+SUPPORTED_LANGUAGES = [
+    ('en', 'ar'),
+    ('ar', 'en'),
+]
 WHISPER_MODEL_SIZE = 'tiny'
 
 SAMPLE_RATE = 16000

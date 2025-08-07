@@ -1,13 +1,13 @@
 from pydub import AudioSegment
 from datetime import datetime
-from settings import SOURCRE_LANG, TARGET_LANG, RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR, DEVICE
+from settings import RMS_THRESHOLD, DEBUG_AUDIO_SAVE_DIR
 from transcriber import Transcriber
 from translator import Translator
 import io
 import os
 
 
-def transcribe_and_translate(audio: AudioSegment, previous_transcript: str='') -> tuple[str, str]:
+def transcribe_and_translate(audio: AudioSegment, transcriber: Transcriber, translator: Translator, previous_transcript: str='') -> tuple[str, str]:
     # export audio to in-memory WAV buffer
     wav_io = io.BytesIO()
     audio.export(wav_io, format='wav')
@@ -35,7 +35,3 @@ def save_audio_to_file(audio: AudioSegment) -> None:
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f'{DEBUG_AUDIO_SAVE_DIR}/{timestamp}.wav'
     audio.export(filename, format='wav')
-
-
-transcriber = Transcriber(SOURCRE_LANG, device=DEVICE)
-translator = Translator(SOURCRE_LANG, TARGET_LANG, device=DEVICE)
