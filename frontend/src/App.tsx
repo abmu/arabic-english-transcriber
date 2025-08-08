@@ -89,6 +89,10 @@ function App() {
   };
 
   const startRecording = async () => {
+    socketRef.current?.send(JSON.stringify({
+      type: 'start'
+    }));
+
     setFinalSegments([]);
     setInterimSegment(null);
 
@@ -121,6 +125,10 @@ function App() {
   };
 
   const stopRecording = () => {
+    socketRef.current?.send(JSON.stringify({
+      type: 'stop'
+    }));
+
     recorderRef.current?.stopRecording();
     recorderRef.current = null;
 

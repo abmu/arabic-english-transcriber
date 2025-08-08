@@ -2,7 +2,7 @@ SUPPORTED_LANGUAGES = [
     ('en', 'ar'),
     ('ar', 'en'),
 ]
-WHISPER_MODEL_SIZE = 'tiny'
+WHISPER_MODEL_SIZE = 'base'
 
 SAMPLE_RATE = 16000
 RMS_THRESHOLD = 800 # silence level

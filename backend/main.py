@@ -35,7 +35,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     websocket_buffer = AudioSegment.empty()
     audio_buffer = AudioSegment.empty()
-    previous_transcript = ''
+    final_transcript, final_translation, interim_transcript, interim_translation = '', '', '', ''
 
     while True:
         try:
@@ -47,8 +47,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_text(json.dumps({'error': 'Invalid JSON format'}))
                     continue
                 
-                # change source and target lang to new config set in frontend
-                if msg.get('type') == 'config':
+                msg_type = msg.get('type')
+                if msg_type == 'config':
+                    # change source and target lang to new config set in frontend
                     source_lang = msg.get('source_lang')
                     target_lang = msg.get('target_lang')
 
@@ -58,7 +59,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     current_source = source_lang
                     current_target = target_lang
-
+                elif msg_type == 'start':
+                    final_transcript, final_translation, interim_transcript, interim_translation = '', '', '', ''
+                elif msg_type == 'stop':
+                    final_transcript += interim_transcript
+                    final_translation += interim_translation
             elif 'bytes' in message:
                 # create audio segment from user bytes
                 data = message['bytes']
@@ -89,17 +94,20 @@ async def websocket_endpoint(websocket: WebSocket):
                     audio_buffer,
                     transcribers[current_source],
                     translators[(current_source, current_target)],
-                    previous_transcript=previous_transcript
+                    previous_transcript=final_transcript
                 )
                 
                 if currently_silent or len(audio_buffer) > AUDIO_BUFFER_LIMIT:
                     if DEBUG:
                         save_audio_to_file(audio_buffer)
                     message_type = 'final'
-                    previous_transcript = transcript
+                    final_transcript += transcript
+                    final_translation += translation
+                    interim_transcript, interim_translation = '', ''
                     audio_buffer = AudioSegment.empty() # reset after final transcript is sent
                 else:
                     message_type = 'interim'
+                    interim_transcript, interim_translation = transcript, translation
 
                 await websocket.send_text(json.dumps({
                     'type': message_type,
