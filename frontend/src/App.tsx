@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 import { AUDIO_SETTINGS } from './config';
+import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -130,19 +131,18 @@ function App() {
   }
 
   return (
-    <div>
-      <h1>Arabic-English Translator</h1>
+    <div className='flex flex-col items-center gap-5 min-h-screen bg-gray-900 text-white p-6'>
+      <h1 className='text-2xl font-bold'>Live Arabic-English Translator</h1>
       <div>
         <label>
-          Language Direction:{' '}
-          <select onChange={handleLanguageDirectionChange} disabled={isRecording}>
-            <option value="ar-en">Arabic ➝ English</option>
-            <option value="en-ar">English ➝ Arabic</option>
+          <select onChange={handleLanguageDirectionChange} disabled={isRecording} className='bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50'>
+            <option value='ar-en'>Arabic ➝ English</option>
+            <option value='en-ar'>English ➝ Arabic</option>
           </select>
         </label>
       </div>
       <button onClick={isRecording ? stopRecording : startRecording}>
-        {isRecording ? 'Stop Recording' : 'Start Recording'}
+        {isRecording ? <FaStop /> : <FaMicrophone />}
       </button>
       <h2>Transcript:</h2>
       <p>
