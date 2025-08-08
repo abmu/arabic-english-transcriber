@@ -136,26 +136,28 @@ function App() {
       <div>
         <label>
           <select onChange={handleLanguageDirectionChange} disabled={isRecording} className='bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50'>
-            <option value='ar-en'>Arabic ➝ English</option>
-            <option value='en-ar'>English ➝ Arabic</option>
+            <option value='ar-en'>Arabic → English</option>
+            <option value='en-ar'>English → Arabic</option>
           </select>
         </label>
       </div>
-      <button onClick={isRecording ? stopRecording : startRecording}>
+      <button onClick={isRecording ? stopRecording : startRecording} className='bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'>
         {isRecording ? <FaStop /> : <FaMicrophone />}
       </button>
-      <h2>Transcript:</h2>
-      <p>
-        {[...finalSegments.map(seg => seg.transcript), interimSegment?.transcript]
-          .filter(Boolean)
-          .join(' ')}
-      </p>
-      <h2>Translation:</h2>
-      <p>
-        {[...finalSegments.map(seg => seg.translation), interimSegment?.translation]
-          .filter(Boolean)
-          .join(' ')}
-      </p>
+      <div className='w-full max-w-xl'>
+        <h2 className='text-lg font-semibold mt-4'>Transcript:</h2>
+        <p className='bg-gray-800 p-3 rounded mt-2 text-sm'>
+          {[...finalSegments.map(seg => seg.transcript), interimSegment?.transcript]
+            .filter(Boolean)
+            .join(' ')}
+        </p>
+        <h2 className='text-lg font-semibold mt-4'>Translation:</h2>
+        <p className='bg-gray-800 p-3 rounded mt-2 text-sm'>
+          {[...finalSegments.map(seg => seg.translation), interimSegment?.translation]
+            .filter(Boolean)
+            .join(' ')}
+        </p>
+      </div>
     </div>
   );
 }
