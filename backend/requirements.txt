@@ -7,3 +7,4 @@ fastapi
 pydub
 websockets
 uvicorn
+pyttsx3

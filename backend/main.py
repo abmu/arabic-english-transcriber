@@ -40,6 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         try:
             message = await websocket.receive()
+
             if 'text' in message:
                 try:
                     msg = json.loads(message['text'])
@@ -60,10 +61,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     current_source = source_lang
                     current_target = target_lang
                 elif msg_type == 'start':
+                    # clear all previous transcripts and translations
                     final_transcript, final_translation, interim_transcript, interim_translation = '', '', '', ''
                 elif msg_type == 'stop':
-                    final_transcript += interim_transcript
-                    final_translation += interim_translation
+                    # create and send text to speech of final translation
+                    final_transcript += ' ' + interim_transcript
+                    final_translation += ' ' + interim_translation
+
             elif 'bytes' in message:
                 # create audio segment from user bytes
                 data = message['bytes']
@@ -101,10 +105,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     if DEBUG:
                         save_audio_to_file(audio_buffer)
                     message_type = 'final'
-                    final_transcript += transcript
-                    final_translation += translation
+                    final_transcript += ' ' + transcript
+                    final_translation += ' ' + translation
                     interim_transcript, interim_translation = '', ''
-                    audio_buffer = AudioSegment.empty() # reset after final transcript is sent
+                    audio_buffer = AudioSegment.empty() # reset audio buffer when final transcript is sent
                 else:
                     message_type = 'interim'
                     interim_transcript, interim_translation = transcript, translation
