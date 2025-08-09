@@ -35,8 +35,8 @@ async def websocket_endpoint(websocket: WebSocket):
         if (s, t) not in translators:
             translators[(s,t)] = Translator(source_lang=s, target_lang=t, device=DEVICE)
 
-        if s not in synthesisers:
-            synthesisers[s] = Synthesiser(source_lang=s, device=DEVICE)
+        if t not in synthesisers:
+            synthesisers[t] = Synthesiser(source_lang=t, device=DEVICE)
     current_source, current_target = SUPPORTED_LANGUAGES[0]
 
     websocket_buffer = AudioSegment.empty()
@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     final_transcripts.append(interim_transcript)
                     final_translations.append(interim_translation)
                     full_translation = ' '.join(final_translations).strip()
-                    audio_bytes = synthesisers[current_source].synthesise(full_translation)
+                    audio_bytes = synthesisers[current_target].synthesise(full_translation)
                     audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
                     await websocket.send_text(json.dumps({
                         'type': 'tts',

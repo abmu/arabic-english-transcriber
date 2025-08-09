@@ -7,6 +7,7 @@ function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [finalSegments, setFinalSegments] = useState<{ transcript: string; translation: string }[]>([]);
   const [interimSegment, setInterimSegment] = useState<{ transcript: string; translation: string } | null>(null);
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
   const [sourceLang, setSourceLang] = useState<'ar' | 'en'>('ar');
   const [targetLang, setTargetLang] = useState<'ar' | 'en'>('en');
 
@@ -45,6 +46,10 @@ function App() {
             transcript: msg.transcript,
             translation: msg.translation
           });
+        } else if (msg.type === 'tts') {
+          const audioBlob = new Blob([Uint8Array.from(atob(msg.audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          setTtsAudioUrl(audioUrl);
         }
       } catch (e) {
         console.error('Invalid JSON from server:', event.data);
@@ -95,6 +100,7 @@ function App() {
 
     setFinalSegments([]);
     setInterimSegment(null);
+    setTtsAudioUrl(null);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -165,6 +171,12 @@ function App() {
             .filter(Boolean)
             .join(' ')}
         </p>
+        <div className='mt-4'>
+          <h2 className='text-lg font-semibold'>Translation Audio:</h2>
+          {ttsAudioUrl && (
+            <audio controls src={ttsAudioUrl} className='mt-2 w-full' />
+          )}
+      </div>
       </div>
     </div>
   );
