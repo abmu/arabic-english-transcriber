@@ -1,4 +1,5 @@
-import pyttsx3
+import wave
+from piper import PiperVoice
 
 class Synthesiser:
     '''
@@ -7,9 +8,13 @@ class Synthesiser:
 
     def __init__(self, source_lang: str, device: str='cpu'):
         self.source_lang = source_lang
-        engine = pyttsx3.init()
-        engine.say('Hello')
-        engine.runAndWait()
-        self.engine = engine
+        use_cuda = device == 'cuda'
+        self.voice = PiperVoice.load(f'./voices/{source_lang}.onnx', use_cuda=use_cuda)
 
-Synthesiser('en')
+    def synthesise(self, text: str):
+        output_path = 'output.wav'
+        with wave.open(output_path, 'wb') as f:
+            self.voice.synthesize_wav(text, f)
+
+s = Synthesiser('er')
+s.synthesise('Hello there!')

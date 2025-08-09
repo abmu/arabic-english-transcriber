@@ -35,7 +35,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
     websocket_buffer = AudioSegment.empty()
     audio_buffer = AudioSegment.empty()
-    final_transcript, final_translation, interim_transcript, interim_translation = '', '', '', ''
+    final_transcripts, final_translations = [], []
+    interim_transcript, interim_translation = '', ''
 
     while True:
         try:
@@ -62,11 +63,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     current_target = target_lang
                 elif msg_type == 'start':
                     # clear all previous transcripts and translations
-                    final_transcript, final_translation, interim_transcript, interim_translation = '', '', '', ''
+                    final_transcripts, final_translations = [], []
+                    interim_transcript, interim_translation = '', ''
                 elif msg_type == 'stop':
                     # create and send text to speech of final translation
-                    final_transcript += ' ' + interim_transcript
-                    final_translation += ' ' + interim_translation
+                    final_transcripts.append(interim_transcript)
+                    final_translations.append(interim_translation)
+                    full_translation = ' '.join(final_translations).strip()
 
             elif 'bytes' in message:
                 # create audio segment from user bytes
@@ -93,20 +96,21 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 if len(audio_buffer) == 0:
                     continue
-                    
+                
+                previous_transcript = ' '.join(final_transcripts).strip()
                 transcript, translation = transcribe_and_translate(
                     audio_buffer,
                     transcribers[current_source],
                     translators[(current_source, current_target)],
-                    previous_transcript=final_transcript
+                    previous_transcript=previous_transcript
                 )
                 
                 if currently_silent or len(audio_buffer) > AUDIO_BUFFER_LIMIT:
                     if DEBUG:
                         save_audio_to_file(audio_buffer)
                     message_type = 'final'
-                    final_transcript += ' ' + transcript
-                    final_translation += ' ' + translation
+                    final_transcripts.append(transcript)
+                    final_translations.append(translation)
                     interim_transcript, interim_translation = '', ''
                     audio_buffer = AudioSegment.empty() # reset audio buffer when final transcript is sent
                 else:
