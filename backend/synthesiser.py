@@ -1,5 +1,6 @@
-import wave
 from piper import PiperVoice
+import io
+import wave
 
 class Synthesiser:
     '''
@@ -11,10 +12,9 @@ class Synthesiser:
         use_cuda = device == 'cuda'
         self.voice = PiperVoice.load(f'./voices/{source_lang}.onnx', use_cuda=use_cuda)
 
-    def synthesise(self, text: str):
-        output_path = 'output.wav'
-        with wave.open(output_path, 'wb') as f:
-            self.voice.synthesize_wav(text, f)
-
-s = Synthesiser('er')
-s.synthesise('Hello there!')
+    def synthesise(self, text: str) -> bytes:
+        # convert text into audio bytes
+        buffer = io.BytesIO()
+        with wave.open(buffer, 'wb') as wav_file:
+            self.voice.synthesize_wav(text, wav_file)
+        return buffer.getvalue()

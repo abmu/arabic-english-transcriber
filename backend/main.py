@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
 from transcriber import Transcriber
 from translator import Translator
+from synthesiser import Synthesiser 
 from utils import transcribe_and_translate, is_silent, save_audio_to_file
 from settings import SUPPORTED_LANGUAGES, SAMPLE_RATE, WEBSOCKET_THRESHOLD, AUDIO_BUFFER_LIMIT, DEBUG, DEVICE
 import json
+import base64
 
 
 app = FastAPI()
@@ -25,12 +27,16 @@ async def websocket_endpoint(websocket: WebSocket):
     # initialise all of the possible transcribers and translators that may be used
     transcribers = {}
     translators = {}
+    synthesisers = {}
     for s, t in SUPPORTED_LANGUAGES:
         if s not in transcribers:
             transcribers[s] = Transcriber(source_lang=s, device=DEVICE)
         
         if (s, t) not in translators:
             translators[(s,t)] = Translator(source_lang=s, target_lang=t, device=DEVICE)
+
+        if s not in synthesisers:
+            synthesisers[s] = Synthesiser(source_lang=s, device=DEVICE)
     current_source, current_target = SUPPORTED_LANGUAGES[0]
 
     websocket_buffer = AudioSegment.empty()
@@ -70,6 +76,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     final_transcripts.append(interim_transcript)
                     final_translations.append(interim_translation)
                     full_translation = ' '.join(final_translations).strip()
+                    audio_bytes = synthesisers[current_source].synthesise(full_translation)
+                    audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
+                    await websocket.send_text(json.dumps({
+                        'type': 'tts',
+                        'audio': audio_b64
+                    }))
 
             elif 'bytes' in message:
                 # create audio segment from user bytes
