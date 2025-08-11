@@ -20,23 +20,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# initialise all of the possible transcribers and translators that may be used
+transcribers = {}
+translators = {}
+synthesisers = {}
+for s, t in SUPPORTED_LANGUAGES:
+    if s not in transcribers:
+        transcribers[s] = Transcriber(source_lang=s, device=DEVICE)
+    
+    if (s, t) not in translators:
+        translators[(s,t)] = Translator(source_lang=s, target_lang=t, device=DEVICE)
+
+    if t not in synthesisers:
+        synthesisers[t] = Synthesiser(source_lang=t, device=DEVICE)
+
 @app.websocket('/ws/audio')
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
-    # initialise all of the possible transcribers and translators that may be used
-    transcribers = {}
-    translators = {}
-    synthesisers = {}
-    for s, t in SUPPORTED_LANGUAGES:
-        if s not in transcribers:
-            transcribers[s] = Transcriber(source_lang=s, device=DEVICE)
-        
-        if (s, t) not in translators:
-            translators[(s,t)] = Translator(source_lang=s, target_lang=t, device=DEVICE)
-
-        if t not in synthesisers:
-            synthesisers[t] = Synthesiser(source_lang=t, device=DEVICE)
     current_source, current_target = SUPPORTED_LANGUAGES[0]
 
     websocket_buffer = AudioSegment.empty()
