@@ -16,7 +16,7 @@ function App() {
   const recorderRef = useRef<typeof RecordRTC | null>(null);
 
   useEffect(() => {
-    const socket = new WebSocket( import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/ws/audio' );
+    const socket = new WebSocket( import.meta.env.VITE_WS_URL ?? 'ws://localhost:8080/ws/audio' );
     socketRef.current = socket;
 
     socket.onopen = () => {
