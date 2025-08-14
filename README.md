@@ -9,11 +9,11 @@ INSERT VIDEO
 
 **The setup below is designed for testing purposes only.**
 
-## Server setup
+## Backend setup
 
 1. To run the server, first get a copy of the `backend/` directory. Within the `settings.py` file you can adjust various settings such as the size of the Whisper model, or whether to use CUDA or CPU.
 
-2. Within your `backend/` install the dependencies located in the `requirements.txt` file. For example:
+2. Within your `backend/` directory install the dependencies located in the `requirements.txt` file. For example:
 
 ```bash
 python3 -m venv .venv
