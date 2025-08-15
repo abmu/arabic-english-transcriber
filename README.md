@@ -3,7 +3,7 @@
 A web app built using a FastAPI backend and React frontend. This app transcribes Arabic or English audio in real time, translates it into the other language, and converts the translation text to speech. All processing is done locally on the server using on-device models -- Whisper for transcription, OPUS-MT for translation, and Piper for text-to-speech.
 
 Live Demo: https://arabic-english-transcriber.web.app/
-(Frontend deployed with Firebase, backend deployed on Google Cloud Run.)
+(Frontend deployed with Firebase, backend deployed on Google Cloud Run. GitHub actions used for CI/CD.)
 
 INSERT VIDEO
 
