@@ -42,6 +42,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     websocket_buffer = AudioSegment.empty()
     audio_buffer = AudioSegment.empty()
+    
     final_transcripts, final_translations = [], []
     interim_transcript, interim_translation = '', ''
 
