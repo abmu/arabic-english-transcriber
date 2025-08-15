@@ -3,7 +3,7 @@ name: Deploy Frontend to Firebase
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'frontend/**'  # only trigger if frontend files change
 
