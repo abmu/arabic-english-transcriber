@@ -22,4 +22,4 @@ jobs:
           cd frontend
           npm ci
           npm run build
-          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --token "$FIREBASE_TOKEN" --only hosting
+          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }} --only hosting
