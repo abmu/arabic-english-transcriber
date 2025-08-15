@@ -1,0 +1,30 @@
+name: Deploy Frontend to Firebase
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'  # only trigger if frontend files change
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Build and Deploy
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          firebase deploy --project ${{ secrets.FIREBASE_PROJECT_ID }} --only hosting
