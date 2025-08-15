@@ -3,9 +3,9 @@ SUPPORTED_LANGUAGES = [
     ('ar', 'en'),
 ]
 
-WHISPER_MODEL_SIZE = 'base'
+WHISPER_MODEL_SIZE = 'tiny' # tiny, base, small, medium, large-v1, large-v2, large-v3, or large
 
-DEVICE = 'cuda' # 'cpu' or 'cuda'
+DEVICE = 'cpu' # 'cpu' or 'cuda'
 
 SAMPLE_RATE = 16000
 RMS_THRESHOLD = 800 # silence level
